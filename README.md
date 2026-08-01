@@ -32,6 +32,21 @@ for alarm in due_alarms:
     print(f"🔔 ALARM: {alarm.label} ({alarm.time})!")
 ```
 
+## Running the CLI Application
+
+You can start the interactive CLI application by running the script from the root of the project:
+
+```bash
+python3 main.py
+# Or run it as a module:
+python3 -m pylarm
+```
+
+### CLI Commands:
+- `add`: Add an alarm by entering a time in `HH:MM` format and a label.
+- `list`: Show all scheduled alarms with their status.
+- `exit`: Stop the application and background daemon thread.
+
 ## Running Tests
 
 To run the unit test suite:
@@ -39,3 +54,4 @@ To run the unit test suite:
 ```bash
 python3 -m unittest discover -s tests
 ```
+

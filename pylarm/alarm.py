@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+import threading
 import uuid
 
 
@@ -13,10 +14,11 @@ class Alarm:
 
 
 class AlarmManager:
-    """Manages scheduling and retrieval of alarms."""
+    """Manages scheduling and retrieval of alarms in a thread-safe manner."""
     
     def __init__(self) -> None:
         self.alarms: list[Alarm] = []
+        self._lock = threading.Lock()
 
     def add_alarm(self, time_str: str, label: str, *, _now: datetime | None = None) -> Alarm:
         """
@@ -52,7 +54,8 @@ class AlarmManager:
             alarm_datetime += timedelta(days=1)
 
         alarm = Alarm(time=alarm_datetime, label=label)
-        self.alarms.append(alarm)
+        with self._lock:
+            self.alarms.append(alarm)
         return alarm
 
     def get_due_alarms(self, *, _now: datetime | None = None) -> list[Alarm]:
@@ -70,9 +73,20 @@ class AlarmManager:
         now = _now or datetime.now()
         due_alarms: list[Alarm] = []
         
-        for alarm in self.alarms:
-            if alarm.is_active and alarm.time <= now:
-                alarm.is_active = False
-                due_alarms.append(alarm)
+        with self._lock:
+            for alarm in self.alarms:
+                if alarm.is_active and alarm.time <= now:
+                    alarm.is_active = False
+                    due_alarms.append(alarm)
                 
         return due_alarms
+
+    def get_all_alarms(self) -> list[Alarm]:
+        """
+        Returns a thread-safe snapshot of all scheduled alarms.
+        
+        Returns:
+            A list of Alarm instances.
+        """
+        with self._lock:
+            return list(self.alarms)
