@@ -48,7 +48,7 @@ def run_alarm_daemon(manager: AlarmManager, stop_event: threading.Event) -> None
                 sys.stdout.write(f"Time:  {alarm.time.strftime('%Y-%m-%d %H:%M:%S')}".center(50) + "\n")
                 sys.stdout.write("=" * 50 + "\n")
                 sys.stdout.write(r"""
-  ____ __   __ _        _     ____  __  __ 
+  ____  __   __ _         _     ____  __  __ 
  |  _ \ \ \ / /| |       / \   |  _ \|  \/  |
  | |_) | \ V / | |      / _ \  | |_) | |\/| |
  |  __/   | |  | |___  / ___ \ |  _ <| |  | |
