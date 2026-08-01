@@ -32,15 +32,38 @@ for alarm in due_alarms:
     print(f"🔔 ALARM: {alarm.label} ({alarm.time})!")
 ```
 
-## Running the CLI Application
+## Installation & Global Deployment
 
-You can start the interactive CLI application by running the script from the root of the project:
+To build, install, and run `pylarm` globally as a CLI application on your system, you can install the package locally:
+
+### Option A: Standard local install
+```bash
+pip install .
+```
+
+### Option B: Editable install (great for development; updates source files immediately)
+```bash
+pip install -e .
+```
+
+### Option C: Isolated user-facing CLI tool installation (recommended)
+Using [`pipx`](https://github.com/pypa/pipx):
+```bash
+pipx install .
+```
+
+Once installed, the `pylarm` command will be added to your system path. You can run it from anywhere in your terminal by simply typing:
+
+```bash
+pylarm
+```
+
+Alternatively, you can run the raw script without installation:
 
 ```bash
 python3 main.py
-# Or run it as a module:
-python3 -m pylarm
 ```
+
 
 ### CLI Commands:
 - `add`: Add an alarm by entering a time in `HH:MM` format and a label.
