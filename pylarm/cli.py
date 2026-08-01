@@ -1,8 +1,35 @@
+import os
+import subprocess
 import sys
 import time
 import threading
 from datetime import datetime
 from pylarm.alarm import AlarmManager
+
+
+def play_alarm_sound(duration_seconds: int = 30) -> None:
+    """Plays the macOS system sound in a loop for a set duration in the background."""
+    def sound_loop():
+        sound_path = "/System/Library/Sounds/Glass.aiff"
+        start_time = time.time()
+        use_afplay = os.path.exists(sound_path)
+        
+        while time.time() - start_time < duration_seconds:
+            if use_afplay:
+                try:
+                    subprocess.run(
+                        ["afplay", sound_path],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL
+                    )
+                except Exception:
+                    use_afplay = False  
+            else:
+                sys.stdout.write("\a")
+                sys.stdout.flush()
+                time.sleep(1)
+
+    threading.Thread(target=sound_loop, daemon=True).start()
 
 
 def run_alarm_daemon(manager: AlarmManager, stop_event: threading.Event) -> None:
@@ -11,39 +38,42 @@ def run_alarm_daemon(manager: AlarmManager, stop_event: threading.Event) -> None
         try:
             due_alarms = manager.get_due_alarms()
             for alarm in due_alarms:
-                # Highly visible ASCII banner
+                
+                play_alarm_sound(duration_seconds=30)
+                
+                
                 sys.stdout.write("\n" + "=" * 50 + "\n")
                 sys.stdout.write("🔔   ALARM TRIGGERED!   🔔\n".center(50))
                 sys.stdout.write(f"Label: {alarm.label}".center(50) + "\n")
                 sys.stdout.write(f"Time:  {alarm.time.strftime('%Y-%m-%d %H:%M:%S')}".center(50) + "\n")
                 sys.stdout.write("=" * 50 + "\n")
                 sys.stdout.write(r"""
-      ___   _       ___   ____   __  __   _ 
-     / _ \ | |     / _ \ |  _ \ |  \/  | | |
-    | | | || |    | | | || |_) || |\/| | | |
-    | |_| || |___ | |_| ||  _ < | |  | | |_|
-     \___/ |_____| \___/ |_| \_\|_|  |_| (_)
-                                            
+  ____ __   __ _        _     ____  __  __ 
+ |  _ \ \ \ / /| |       / \   |  _ \|  \/  |
+ | |_) | \ V / | |      / _ \  | |_) | |\/| |
+ |  __/   | |  | |___  / ___ \ |  _ <| |  | |
+ |_|      |_|  |_____|/_/   \_\|_| \_\|_|  |_|
+                                           
 """)
-                sys.stdout.write("\a")  # Ring terminal bell
                 sys.stdout.write("\n(pylarm) Enter command (add, list, exit): ")
                 sys.stdout.flush()
         except Exception as e:
             sys.stderr.write(f"\nError in background daemon: {e}\n")
             sys.stderr.flush()
         
-        # Sleep in smaller increments so we can shut down quickly/exit clean if needed
+        
         for _ in range(10):
             if stop_event.is_set():
                 break
             time.sleep(0.1)
 
 
+
 def main() -> None:
     manager = AlarmManager()
     stop_event = threading.Event()
     
-    # Start the alarm checking daemon thread
+    
     daemon_thread = threading.Thread(
         target=run_alarm_daemon, 
         args=(manager, stop_event), 
