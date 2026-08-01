@@ -6,13 +6,15 @@ from pylarm.alarm import Alarm, AlarmManager
 class TestAlarm(unittest.TestCase):
     def test_alarm_dataclass_initialization(self):
         target_time = datetime(2026, 8, 1, 12, 0)
-        alarm = Alarm(time=target_time, label="Wake up")
+        alarm = Alarm(time=target_time, label="Wake up", ringtone="Ping")
         
         self.assertEqual(alarm.time, target_time)
         self.assertEqual(alarm.label, "Wake up")
+        self.assertEqual(alarm.ringtone, "Ping")
         self.assertTrue(alarm.is_active)
         self.assertTrue(isinstance(alarm.id, str))
         self.assertTrue(len(alarm.id) > 0)
+
 
     def test_add_alarm_future_today(self):
         manager = AlarmManager()

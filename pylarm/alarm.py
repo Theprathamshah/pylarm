@@ -6,10 +6,11 @@ import uuid
 
 @dataclass
 class Alarm:
-    """Represents an alarm entry with a target datetime, label, and active status."""
+    """Represents an alarm entry with a target datetime, label, active status, and ringtone."""
     time: datetime
     label: str
     is_active: bool = True
+    ringtone: str = "default"
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
 
@@ -20,7 +21,7 @@ class AlarmManager:
         self.alarms: list[Alarm] = []
         self._lock = threading.Lock()
 
-    def add_alarm(self, time_str: str, label: str, *, _now: datetime | None = None) -> Alarm:
+    def add_alarm(self, time_str: str, label: str, ringtone: str = "default", *, _now: datetime | None = None) -> Alarm:
         """
         Parses a time string in 'HH:MM' format and adds a new alarm.
         
@@ -30,6 +31,7 @@ class AlarmManager:
         Args:
             time_str: The alarm time in 'HH:MM' format (24-hour clock).
             label: A descriptive label for the alarm.
+            ringtone: Name of the selected ringtone. Defaults to "default".
             _now: Optional datetime override for testing. Defaults to datetime.now().
             
         Returns:
@@ -46,14 +48,14 @@ class AlarmManager:
             ) from e
 
         now = _now or datetime.now()
-        
+        # Combine today's date with the parsed time
         alarm_datetime = datetime.combine(now.date(), parsed_time)
 
-        
+        # If the alarm time is in the past or exactly now, schedule it for tomorrow
         if alarm_datetime <= now:
             alarm_datetime += timedelta(days=1)
 
-        alarm = Alarm(time=alarm_datetime, label=label)
+        alarm = Alarm(time=alarm_datetime, label=label, ringtone=ringtone)
         with self._lock:
             self.alarms.append(alarm)
         return alarm
